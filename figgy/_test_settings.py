@@ -1,3 +1,4 @@
+from termcolor import colored
 from figgy.settings import *
 
 DEBUG = False
@@ -63,6 +64,5 @@ TESTING = True
 try:
     from figgy._local_tests import *
 except ImportError, e:
-    print u"FYI: You have no figgy/_local_tests.py, but you should!"
+    print colored(u"FYI: You have no figgy/_local_tests.py, but you should!", "yellow")
     pass
-
