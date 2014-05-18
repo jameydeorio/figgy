@@ -32,6 +32,7 @@ setup(
         'tox<=1.8',
         'termcolor<=1.2',
         'South<=0.8',
+        'django-extensions<=1.3',
     ],
     entry_points="""
     # -*- Entry points: -*-

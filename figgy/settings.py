@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     'django_nose',
 
     'south',
+    'django_extensions',
 
     'storage',
 
