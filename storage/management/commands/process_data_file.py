@@ -15,6 +15,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         for filename in args:
             with open(filename, 'rb') as fh:
-                print "Importing %s into database." % filename
+                print "\nImporting %s into database." % filename
                 book_node = etree.parse(fh).getroot()
                 storage.tools.process_book_element(book_node)
