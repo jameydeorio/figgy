@@ -29,6 +29,7 @@ setup(
         # 'cssselect',
 
         'django-nose',
+        'tox<1.8',
     ],
     entry_points="""
     # -*- Entry points: -*-
