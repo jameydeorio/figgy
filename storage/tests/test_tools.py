@@ -1,6 +1,7 @@
 # encoding: utf-8
 # Created by David Rideout <drideout@safaribooksonline.com> on 2/7/14 5:01 PM
 # Copyright (c) 2013 Safari Books Online, LLC. All rights reserved.
+from django.db import IntegrityError
 
 from django.test import TestCase
 from lxml import etree
@@ -11,11 +12,7 @@ import storage.tools
 class TestTools(TestCase):
     def setUp(self):
         pass
-
-    def test_storage_tools_process_book_element_db(self):
-        '''process_book_element should put the book in the database.'''
-
-        xml_str = '''
+        self.valid_book_xml_str = '''
         <book id="12345">
             <title>A title</title>
             <aliases>
@@ -25,7 +22,20 @@ class TestTools(TestCase):
         </book>
         '''
 
-        xml = etree.fromstring(xml_str)
+        self.dupe_alias_book_xml_str = '''
+        <book id="54321">
+            <title>Another title</title>
+            <aliases>
+                <alias scheme="ISBN-10" value="2222222222"/>
+                <alias scheme="ISBN-13" value="0000000000123"/>
+            </aliases>
+        </book>
+        '''
+
+    def test_storage_tools_process_book_element_db(self):
+        '''process_book_element should put the book in the database.'''
+
+        xml = etree.fromstring(self.valid_book_xml_str)
         storage.tools.process_book_element(xml)
 
         self.assertEqual(Book.objects.count(), 1)
@@ -36,3 +46,12 @@ class TestTools(TestCase):
         self.assertEqual(Alias.objects.get(scheme='ISBN-10').value, '0158757819')
         self.assertEqual(Alias.objects.get(scheme='ISBN-13').value, '0000000000123')
 
+    def test_duplicate_aliases_are_not_accepted(self):
+        """
+        Ensure books with duplicate aliases throw an exception
+        """
+        xml = etree.fromstring(self.valid_book_xml_str)
+        storage.tools.process_book_element(xml)
+        xml = etree.fromstring(self.dupe_alias_book_xml_str)
+        storage.tools.process_book_element(xml)
+        self.assertEqual(1, Book.objects.count())  # invalid book was removed
