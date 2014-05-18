@@ -31,6 +31,7 @@ setup(
         'django-nose',
         'tox<=1.8',
         'termcolor<=1.2',
+        'South<=0.8',
     ],
     entry_points="""
     # -*- Entry points: -*-
