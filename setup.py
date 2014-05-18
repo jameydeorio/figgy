@@ -29,7 +29,7 @@ setup(
         # 'cssselect',
 
         'django-nose',
-        'tox<1.8',
+        'tox<=1.8',
         'termcolor<=1.2',
     ],
     entry_points="""
