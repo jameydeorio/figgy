@@ -23,9 +23,13 @@ This setup assumes you have just cloned the git repo and are in the directory wi
     $ cp figgy/local.py.example figgy/local.py             # Your local.py is your personal settings. Edit them later.
     $ python manage.py syncdb --noinput                    # Fill out the database schema
     $ python manage.py createsuperuser                     # Establish an admin so you can log in
+    $ python manage.py migrate                             # Run any migrations that have been created
     $ python manage.py runserver                           # Prove this works by visiting http://localhost:8000
 
 Before you write any code, make sure you can run the tests and get them to pass 100%.
+
+Note: If you have worked on this project before, you will need to run a fake migration to apply the first migration
+without actually trying to create any tables.
 
 ### Every time
 
@@ -34,7 +38,7 @@ sure you have any new dependencies or schema modifications:
 
     $ . ve/bin/activate                           # Turn on the virtualenv (Every time!)
     $ python setup.py develop --always-unzip      # Update the virtualenv with new Python dependencies
-    $ python manage.py syncdb --noinput           # Make sure the database schema is still filled out
+    $ python manage.py migrate                    # Make sure the database schema is up to date
     $ python manage.py runserver                  # Prove this works by visiting http://localhost:8000
 
 tc.
