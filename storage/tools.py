@@ -15,7 +15,6 @@ def process_book_element(book_element):
     :param book: book element
     :returns:
     """
-
     book, book_created = Book.objects.get_or_create(pk=book_element.get('id'))
     book.title = book_element.findtext('title')
     book.description = book_element.findtext('description')
