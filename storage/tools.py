@@ -4,8 +4,7 @@
 from django.db import IntegrityError
 from termcolor import colored
 
-from storage.models import Book
-from storage.models import Alias
+from storage.models import Book, Edition
 
 
 def process_book_element(book_element):
@@ -15,43 +14,35 @@ def process_book_element(book_element):
     :param book: book element
     :returns:
     """
-    book, book_created = Book.objects.get_or_create(pk=book_element.get('id'))
-    book.title = book_element.findtext('title')
-    book.description = book_element.findtext('description')
-
-    errors = []
+    book_id = book_element.get('id')
     aliases = [alias for alias in book_element.xpath('aliases/alias')]
-    created_aliases = []
+    isbn_13 = [alias.get('value') for alias in aliases if alias.get('scheme') == 'ISBN-13'][0]
+    edition, edition_created, book_created = Edition.objects.get_or_create_by_isbn_13(isbn_13, book_id)
+
+    book = edition.book
+    title = book_element.findtext('title')
+    description = book_element.findtext('description')
+    book.title = edition.title = title
+    book.description = edition.description = description
+    if edition_created:
+        # subtract one because we just made this edition, and it will default to 1
+        edition.edition_number = book_element.findtext('edition') or edition.book.get_next_edition_number()
+    else:
+        edition.edition_number = book_element.findtext('edition') or edition.edition_number
+
     for alias in aliases:
         scheme = alias.get('scheme')
         value = alias.get('value')
+
         try:
-            created_alias, created = book.aliases.get_or_create(scheme=scheme, value=value)
-            if created:
-                created_aliases.append(created_alias)
-        except IntegrityError, e:
-            # tried to create alias, but value clashed with another book's alias
-            existing_alias = Alias.objects.get(value=value)
-            errors.append('Duplicate {} found on book "{}" with value {}'.format(scheme, existing_alias.book.id, value))
+            edition.aliases.get_or_create(scheme=scheme, value=value)
+        except IntegrityError:
+            if book_created:
+                book.delete()
+            if edition_created:
+                edition.delete()
+            return colored("{} not saved".format(edition), "red")
 
-    if errors:
-        # here we tell the user about errors and suggest book xml files to fix
-        print colored('"{}" not saved'.format(book.id), 'red')
-        for error in errors:
-            print colored(error, 'yellow')
-
-        print colored("Did you mean to update or add a new edition for one of the following?", "blue")
-        isbn_10_match, other_matches = Alias.get_probable_matches(aliases)
-        if isbn_10_match:
-            print colored("**ISBN-10 match: {}".format(isbn_10_match.id), "blue", attrs=['bold'])
-        for match in other_matches:
-            print colored("{} match: {}".format(match.scheme, match.book.id), "blue")
-
-        # do not proceed with any created books or aliases if there have been errors
-        if book_created:
-            book.delete()
-        for alias in created_aliases:
-            alias.delete()
-    else:
-        book.save()
-        print colored('"{}" {}'.format(book.id, 'saved' if book_created else 'updated'), 'green')
+    book.save()
+    edition.save()
+    return colored("{} {}".format(edition, "saved" if edition_created else "updated"), "green")

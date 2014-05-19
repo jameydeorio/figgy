@@ -1,0 +1,9 @@
+<book id="book-1">
+    <!-- this should match on the canonical book id for book-1 -->
+    <title>this is the first book, 3rd edition</title>
+    <description>A short description about the first book. Third edition.</description>
+    <aliases>
+        <alias scheme="ISBN-10" value="1000000031"/>
+        <alias scheme="ISBN-13" value="1000000000031"/>
+    </aliases>
+</book>
